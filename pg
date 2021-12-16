@@ -30,11 +30,6 @@ myNginxC
  sed -i "s|myNginx|$OvpnDownload_Port|g" /etc/nginx/conf.d/bonveio-ovpn-config.conf
 
 
- # Creating our root directory for all of our .ovpn configs
-#  rm -rf /var/www/openvpn
-#  mkdir -p /var/www/openvpn
-
-
  # Creating OVPN download site index.html
 cat <<'mySiteOvpn' > /var/www/openvpn/index.html
 <!DOCTYPE html>
