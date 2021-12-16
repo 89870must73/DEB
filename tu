@@ -1,14 +1,5 @@
 #!/bin/bash
-# Debian 9 and 10 VPS Installer
-
-
-# Variables (Can be changed depends on your preferred values)
-# Script name
-MyScriptName='XAMJYSScript'
-
-# OpenSSH Ports
-# SSH_Port1='22'
-# SSH_Port2='225'
+MyScriptName='King Mapua'
 
 # Your SSH Banner
 SSH_Banner='https://raw.githubusercontent.com/itsgelogomayee/dpndncy/master/banner'
@@ -20,19 +11,11 @@ Dropbear_Port2='442'
 # Ohp Port
 Ohp_Port='7752'
 
-# Stunnel Ports
-# Stunnel_Port1='444' # through Dropbear
-# Stunnel_Port2='440' # through OpenSSH
-
 # OpenVPN Ports
 OpenVPN_Port1='1103'
-OpenVPN_Port2='25222' # take note when you change this port, openvpn sun noload config will not work
+OpenVPN_Port2='25222'
 
-# Privoxy Ports (must be 1024 or higher)
-# Privoxy_Port1='8118'
-# Privoxy_Port2='8888'
-# OpenVPN Config Download Port
-OvpnDownload_Port='81' # Before changing this value, please read this document. It contains all unsafe ports for Google Chrome Browser, please read from line #23 to line #89: https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
+OvpnDownload_Port='81'
 
 # Server local time
 MyVPS_Time='Asia/Kuala_Lumpur'
@@ -45,7 +28,7 @@ function InstUpdates(){
  apt-get upgrade -y
  
  # Removing some firewall tools that may affect other services
- #apt-get remove --purge ufw firewalld -y
+ apt-get remove --purge ufw firewalld -y
 
  
  # Installing some important machine essentials
@@ -489,14 +472,6 @@ f9ad3c476af859c708825b5212cc94df
 -----END OpenVPN Static key V1-----
 EOF122
 
- # Getting all dns inside resolv.conf then use as Default DNS for our openvpn server
- #grep -v '#' /etc/resolv.conf | grep 'nameserver' | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | while read -r line; do
-	#echo "push \"dhcp-option DNS $line\"" >> /etc/openvpn/server_tcp.conf
-#done
- #grep -v '#' /etc/resolv.conf | grep 'nameserver' | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | while read -r line; do
-	#echo "push \"dhcp-option DNS $line\"" >> /etc/openvpn/server_udp.conf
-#done
-
  # setting openvpn server port
  sed -i "s|MyOvpnPort1|$OpenVPN_Port1|g" /etc/openvpn/server_tcp.conf
  sed -i "s|MyOvpnPort2|$OpenVPN_Port2|g" /etc/openvpn/server_udp.conf
@@ -517,13 +492,6 @@ fi
 
  # Allow IPv4 Forwarding
  echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/20-openvpn.conf && sysctl --system &> /dev/null && echo 1 > /proc/sys/net/ipv4/ip_forward
-
- # Iptables Rule for OpenVPN server
- #PUBLIC_INET="$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1)"
- #IPCIDR='10.200.0.0/16'
- #iptables -I FORWARD -s $IPCIDR -j ACCEPT
- #iptables -t nat -A POSTROUTING -o $PUBLIC_INET -j MASQUERADE
- #iptables -t nat -A POSTROUTING -s $IPCIDR -o $PUBLIC_INET -j MASQUERADE
  
  # Installing Firewalld
  apt install firewalld -y
@@ -554,19 +522,22 @@ fi
  systemctl restart openvpn@server_tcp
  systemctl restart openvpn@server_udp
 
-
  # I'm setting Some Squid workarounds to prevent Privoxy's overflowing file descriptors that causing 50X error when clients trying to connect to your proxy server(thanks for this trick @homer_simpsons)
  apt remove --purge squid -y
  rm -rf /etc/squid/sq*
  apt install squid -y
  
 # Squid Ports (must be 1024 or higher)
- Proxy_Port='8000'
+ Proxy_Port1='8000'
+ Proxy_Port2='3128'
+ Proxy_Port3='8888'
  cat <<mySquid > /etc/squid/squid.conf
 acl VPN dst $(wget -4qO- http://ipinfo.io/ip)/32
 http_access allow VPN
 http_access deny all 
-http_port 0.0.0.0:$Proxy_Port
+http_port 0.0.0.0:$Proxy_Port1
+http_port 0.0.0.0:$Proxy_Port2
+http_port 0.0.0.0:$Proxy_Port3
 coredump_dir /var/spool/squid
 dns_nameservers 1.1.1.1 1.0.0.1
 refresh_pattern ^ftp: 1440 20% 10080
@@ -595,23 +566,23 @@ server {
 }
 myNginxC
 
- # Setting our nginx config port for .ovpn download site
+ # Setting our nginx
  sed -i "s|myNginx|$OvpnDownload_Port|g" /etc/nginx/conf.d/bonveio-ovpn-config.conf
 
  # Removing Default nginx page(port 80)
  rm -rf /etc/nginx/sites-*
 
- # Creating our root directory for all of our .ovpn configs
  rm -rf /var/www/openvpn
- mkdir -p /var/www/openvpn
-
- # Now creating all of our OpenVPN Configs 
+ mkdir -p /var/www/openvpn 
 cat <<EOF152> /var/www/openvpn/GTMConfig.ovpn
-# Credits to GakodX
+# Credits to King Mapua
+# Script smart
+
 client
 dev tun
-remote $IPADDR $OpenVPN_Port1 tcp
-http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Proxy_Port
+proto tcp
+remote $IPADDR $OpenVPN_Port1
+http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Proxy_Port3
 resolv-retry infinite
 route-method exe
 resolv-retry infinite
@@ -629,8 +600,8 @@ ping-restart 60
 hand-window 70
 server-poll-timeout 4
 reneg-sec 2592000
-sndbuf 100000
-rcvbuf 100000
+sndbuf 0
+rcvbuf 0
 remote-cert-tls server
 key-direction 1
 <auth-user-pass>
@@ -759,8 +730,8 @@ ping-restart 60
 hand-window 70
 server-poll-timeout 4
 reneg-sec 2592000
-sndbuf 100000
-rcvbuf 100000
+sndbuf 0
+rcvbuf 0
 remote-cert-tls server
 key-direction 1
 <auth-user-pass>
@@ -832,11 +803,6 @@ cd
 
 DISTRO=`awk '/^ID=/' /etc/*-release | awk -F'=' '{ print tolower($2) }'`
 SERVER_IP=`ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'`
-
-# Welcome Message
-echo 'Welcome to WhyTzy96 Script'
-echo 'Script Version: 0.1'
-echo 'Updated on: 07/08/2021'
 
 # Verify Distro
 if ! [[ $DISTRO == "ubuntu" || $DISTRO == "debian" ]]; then
