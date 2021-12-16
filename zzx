@@ -4,11 +4,7 @@
 
 # Variables (Can be changed depends on your preferred values)
 # Script name
-MyScriptName='XAMJYSScript'
-
-# OpenSSH Ports
-# SSH_Port1='22'
-# SSH_Port2='225'
+MyScriptName='GAKOD'
 
 # Your SSH Banner
 SSH_Banner='https://raw.githubusercontent.com/itsgelogomayee/dpndncy/master/banner'
@@ -20,43 +16,22 @@ Dropbear_Port2='442'
 # Ohp Port
 Ohp_Port='7752'
 
-# Stunnel Ports
-# Stunnel_Port1='444' # through Dropbear
-# Stunnel_Port2='440' # through OpenSSH
-
 # OpenVPN Ports
 OpenVPN_Port1='1103'
-OpenVPN_Port2='25222' # take note when you change this port, openvpn sun noload config will not work
-
-# Privoxy Ports (must be 1024 or higher)
-# Privoxy_Port1='8118'
-# Privoxy_Port2='8888'
-# OpenVPN Config Download Port
-OvpnDownload_Port='80' # Before changing this value, please read this document. It contains all unsafe ports for Google Chrome Browser, please read from line #23 to line #89: https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
+OpenVPN_Port2='25222'
+OvpnDownload_Port='80'
 
 # Server local time
 MyVPS_Time='Asia/Kuala_Lumpur'
-#############################
-
 
 function InstUpdates(){
  export DEBIAN_FRONTEND=noninteractive
  apt-get update
  apt-get upgrade -y
- 
- # Removing some firewall tools that may affect other services
- #apt-get remove --purge ufw firewalld -y
-
- 
- # Installing some important machine essentials
  apt-get install nano wget curl zip unzip tar gzip p7zip-full bc rc openssl cron net-tools dnsutils dos2unix screen bzip2 ccrypt -y
- 
- # Now installing all our wanted services
  apt-get install nginx ruby apt-transport-https lsb-release squid screenfetch -y
-
- # Installing all required packages to install Webmin
- apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python dbus libxml-parser-perl -y
- apt-get install shared-mime-info jq -y
+# apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python dbus libxml-parser-perl -y
+# apt-get install shared-mime-info jq -y
  
  # Installing a text colorizer
  gem install lolcat
@@ -526,22 +501,22 @@ fi
  #iptables -t nat -A POSTROUTING -s $IPCIDR -o $PUBLIC_INET -j MASQUERADE
  
  # Installing Firewalld
- apt install firewalld -y
- systemctl start firewalld
- systemctl enable firewalld
- firewall-cmd --quiet --set-default-zone=public
- firewall-cmd --quiet --zone=public --permanent --add-port=1-65534/tcp
- firewall-cmd --quiet --zone=public --permanent --add-port=1-65534/udp
- firewall-cmd --quiet --reload
- firewall-cmd --quiet --add-masquerade
- firewall-cmd --quiet --permanent --add-masquerade
- firewall-cmd --quiet --permanent --add-service=ssh
- firewall-cmd --quiet --permanent --add-service=openvpn
- firewall-cmd --quiet --permanent --add-service=http
- firewall-cmd --quiet --permanent --add-service=https
- firewall-cmd --quiet --permanent --add-service=privoxy
- firewall-cmd --quiet --permanent --add-service=squid
- firewall-cmd --quiet --reload
+# apt install firewalld -y
+# systemctl start firewalld
+# systemctl enable firewalld
+# firewall-cmd --quiet --set-default-zone=public
+# firewall-cmd --quiet --zone=public --permanent --add-port=1-65534/tcp
+# firewall-cmd --quiet --zone=public --permanent --add-port=1-65534/udp
+# firewall-cmd --quiet --reload
+# firewall-cmd --quiet --add-masquerade
+# firewall-cmd --quiet --permanent --add-masquerade
+# firewall-cmd --quiet --permanent --add-service=ssh
+# firewall-cmd --quiet --permanent --add-service=openvpn
+# firewall-cmd --quiet --permanent --add-service=http
+# firewall-cmd --quiet --permanent --add-service=https
+# firewall-cmd --quiet --permanent --add-service=privoxy
+# firewall-cmd --quiet --permanent --add-service=squid
+# firewall-cmd --quiet --reload
  
  # Enabling IPv4 Forwarding
  echo 1 > /proc/sys/net/ipv4/ip_forward
