@@ -593,7 +593,7 @@ client
 dev tun
 proto tcp
 remote $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $OpenVPN_Port1
-http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Squid_Port1
+http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Proxy_Port
 resolv-retry infinite
 route-method exe
 resolv-retry infinite
